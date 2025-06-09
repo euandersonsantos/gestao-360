@@ -67,7 +67,7 @@ export function PDFExtractionModal({
     issueDate: new Date().toISOString().split('T')[0],
     issueDateTime: '',
     status: 'pending' as const,
-    serviceType: 'fisioterapia' as const,
+    serviceType: 'fisioterapia' as 'fisioterapia' | 'estetica',
     description: ''
   });
 
@@ -384,7 +384,7 @@ export function PDFExtractionModal({
                       <Label htmlFor="serviceType" className="text-xs">Tipo de Serviço</Label>
                       <Select
                         value={formData.serviceType}
-                        onValueChange={(value: any) => setFormData(prev => ({ ...prev, serviceType: value }))}
+                        onValueChange={(value: 'fisioterapia' | 'estetica') => setFormData(prev => ({ ...prev, serviceType: value }))}
                       >
                         <SelectTrigger className="h-8 text-sm">
                           <SelectValue />
