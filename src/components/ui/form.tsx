@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -16,7 +15,7 @@ import {
 import { cn } from "./utils";
 import { Label } from "./label";
 
-function Form({ ...props }) {
+function Form(props: React.ComponentProps<typeof FormProvider>) {
   return <FormProvider {...props} />;
 }
 
