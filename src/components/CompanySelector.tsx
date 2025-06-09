@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ChevronDown, Building2, Edit, Plus, Trash2 } from 'lucide-react';
 import {
@@ -6,6 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuItem,
 } from './ui/dropdown-menu';
 import { Badge } from './ui/badge';
 import { EditCompanyModal } from './EditCompanyModal';
