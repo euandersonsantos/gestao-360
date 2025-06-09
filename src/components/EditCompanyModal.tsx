@@ -5,12 +5,14 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { useCompanies } from '../hooks/useCompanies';
+import { useCompanies, Company } from '../hooks/useCompanies';
 import { usePaymentContext } from '../hooks/useFinancialData';
 
 interface EditCompanyModalProps {
   isOpen: boolean;
   onClose: () => void;
+  company: Company | null;
+  onSave: (updatedCompany: Company) => Promise<void>;
 }
 
 const months = [
@@ -20,7 +22,7 @@ const months = [
 
 const years = ['2023', '2024', '2025', '2026', '2027'];
 
-export function EditCompanyModal({ isOpen, onClose }: EditCompanyModalProps) {
+export function EditCompanyModal({ isOpen, onClose, company, onSave }: EditCompanyModalProps) {
   const { activeCompany, updateCompany } = useCompanies();
   const { updatePaymentTransactionsForMonth, getPaymentTransactionsForMonth } = usePaymentContext();
   
@@ -37,20 +39,23 @@ export function EditCompanyModal({ isOpen, onClose }: EditCompanyModalProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && activeCompany) {
-      const [monthName, year] = activeCompany.startMonth ? activeCompany.startMonth.split(' ') : ['', ''];
-      
-      setFormData({
-        name: activeCompany.name,
-        selectedMonth: monthName,
-        selectedYear: year,
-        initialBalance: activeCompany.initialBalance ? formatCurrencyInput((activeCompany.initialBalance * 100).toString()) : '',
-        proLaborePercentual: activeCompany.taxSettings ? formatPercentageInput(activeCompany.taxSettings.proLaborePercentual * 100) : '28',
-        inssPercentual: activeCompany.taxSettings ? formatPercentageInput(activeCompany.taxSettings.inssPercentual * 100) : '11',
-        dasAliquota: activeCompany.taxSettings ? formatPercentageInput(activeCompany.taxSettings.dasAliquota * 100) : '6'
-      });
+    if (isOpen && (company || activeCompany)) {
+      const targetCompany = company || activeCompany;
+      if (targetCompany) {
+        const [monthName, year] = targetCompany.startMonth ? targetCompany.startMonth.split(' ') : ['', ''];
+        
+        setFormData({
+          name: targetCompany.name,
+          selectedMonth: monthName,
+          selectedYear: year,
+          initialBalance: targetCompany.initialBalance ? formatCurrencyInput((targetCompany.initialBalance * 100).toString()) : '',
+          proLaborePercentual: targetCompany.taxSettings ? formatPercentageInput(targetCompany.taxSettings.proLaborePercentual * 100) : '28',
+          inssPercentual: targetCompany.taxSettings ? formatPercentageInput(targetCompany.taxSettings.inssPercentual * 100) : '11',
+          dasAliquota: targetCompany.taxSettings ? formatPercentageInput(targetCompany.taxSettings.dasAliquota * 100) : '6'
+        });
+      }
     }
-  }, [isOpen, activeCompany]);
+  }, [isOpen, company, activeCompany]);
 
   const formatCurrencyInput = (value: string) => {
     const numericValue = value.replace(/\D/g, '');
@@ -152,7 +157,8 @@ export function EditCompanyModal({ isOpen, onClose }: EditCompanyModalProps) {
   };
 
   const handleSubmit = async () => {
-    if (!activeCompany || !formData.name.trim() || !formData.selectedMonth || !formData.selectedYear) {
+    const targetCompany = company || activeCompany;
+    if (!targetCompany || !formData.name.trim() || !formData.selectedMonth || !formData.selectedYear) {
       return;
     }
 
@@ -161,19 +167,24 @@ export function EditCompanyModal({ isOpen, onClose }: EditCompanyModalProps) {
     try {
       const newStartMonth = `${formData.selectedMonth} ${formData.selectedYear}`;
       const newInitialBalance = parseCurrencyInput(formData.initialBalance);
-      const oldStartMonth = activeCompany.startMonth;
-      const oldInitialBalance = activeCompany.initialBalance || 0;
+      const oldStartMonth = targetCompany.startMonth;
+      const oldInitialBalance = targetCompany.initialBalance || 0;
 
-      await updateCompany(activeCompany.id, {
+      const updatedCompany: Company = {
+        ...targetCompany,
         name: formData.name,
         startMonth: newStartMonth,
         initialBalance: newInitialBalance,
         taxSettings: {
+          ...targetCompany.taxSettings,
           proLaborePercentual: parsePercentageInput(formData.proLaborePercentual) / 100,
           inssPercentual: parsePercentageInput(formData.inssPercentual) / 100,
           dasAliquota: parsePercentageInput(formData.dasAliquota) / 100,
+          useInvoiceControl: targetCompany.taxSettings.useInvoiceControl || false
         }
-      });
+      };
+
+      await onSave(updatedCompany);
 
       if (oldStartMonth && newStartMonth && oldStartMonth !== newStartMonth) {
         const oldTransactions = getPaymentTransactionsForMonth(oldStartMonth);
@@ -195,7 +206,7 @@ export function EditCompanyModal({ isOpen, onClose }: EditCompanyModalProps) {
 
   const isFormValid = formData.name.trim() && formData.selectedMonth && formData.selectedYear;
 
-  if (!activeCompany) return null;
+  if (!company && !activeCompany) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -207,7 +218,7 @@ export function EditCompanyModal({ isOpen, onClose }: EditCompanyModalProps) {
               Editar empresa
             </DialogTitle>
             <DialogDescription className="text-sm text-gray-500 m-0">
-              Modifique as configurações da empresa {activeCompany.name}
+              Modifique as configurações da empresa {activeCompany?.name}
             </DialogDescription>
           </div>
         </DialogHeader>

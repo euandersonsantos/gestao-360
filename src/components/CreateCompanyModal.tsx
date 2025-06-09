@@ -8,9 +8,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useCompanies } from '../hooks/useCompanies';
 import { usePaymentContext } from '../hooks/useFinancialData';
 
+interface CreateCompanyData {
+  id: string;
+  name: string;
+  cnpj: string;
+  status: 'ativa' | 'inativa';
+  startMonth?: string;
+  initialBalance?: number;
+  taxSettings: {
+    dasAliquota: number;
+    proLaborePercentual: number;
+    inssPercentual: number;
+    useInvoiceControl: boolean;
+  };
+}
+
 interface CreateCompanyModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSave: (newCompanyData: CreateCompanyData) => Promise<void>;
 }
 
 const months = [
@@ -20,7 +36,7 @@ const months = [
 
 const years = ['2023', '2024', '2025', '2026', '2027'];
 
-export function CreateCompanyModal({ isOpen, onClose }: CreateCompanyModalProps) {
+export function CreateCompanyModal({ isOpen, onClose, onSave }: CreateCompanyModalProps) {
   const { addCompany } = useCompanies();
   const { updatePaymentTransactionsForMonth, getPaymentTransactionsForMonth } = usePaymentContext();
   
@@ -118,7 +134,8 @@ export function CreateCompanyModal({ isOpen, onClose }: CreateCompanyModalProps)
       const startMonth = `${formData.selectedMonth} ${formData.selectedYear}`;
       const initialBalanceValue = parseCurrencyInput(formData.initialBalance);
 
-      const newCompanyId = await addCompany({
+      const newCompanyData: CreateCompanyData = {
+        id: Date.now().toString(),
         name: formData.name,
         cnpj: '',
         status: 'ativa',
@@ -130,17 +147,9 @@ export function CreateCompanyModal({ isOpen, onClose }: CreateCompanyModalProps)
           dasAliquota: parseFloat(formData.dasAliquota) / 100,
           useInvoiceControl: false,
         }
-      });
+      };
 
-      console.log('CreateCompanyModal - Empresa criada com ID:', newCompanyId);
-
-      // Aguardar um pouco para garantir que a empresa foi definida como ativa
-      setTimeout(() => {
-        if (initialBalanceValue > 0) {
-          createInitialBalanceTransaction(startMonth, initialBalanceValue);
-        }
-        onClose();
-      }, 100);
+      await onSave(newCompanyData);
 
     } catch (error) {
       console.error('Erro ao criar empresa:', error);
