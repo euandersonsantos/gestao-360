@@ -1,8 +1,9 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { ArrowUpCircle, ArrowDownCircle, DollarSign, Plus, TrendingUp, TrendingDown, ChevronRight, Trash2, X, Calendar, CreditCard, Tag, Briefcase, Wallet, Building, FileText, Wrench, Settings, CalendarIcon, Type, Repeat, Lock, Edit3, RefreshCw, RotateCcw } from 'lucide-react';
 import { IconWithTooltip } from './ui/icon-with-tooltip';
 
-import { usePaymentContext } from '../context/PaymentContext';
+import { usePaymentContext } from '../hooks/useFinancialData';
 import { useFinancialData } from '../hooks/useFinancialData';
 
 interface Payment {
@@ -14,10 +15,22 @@ interface Payment {
 }
 
 export function PaymentManagement() {
-  const { payments, deletePayment } = usePaymentContext();
+  const { getPaymentTransactionsForMonth, updatePaymentTransactionsForMonth } = usePaymentContext();
   const [filteredPayments, setFilteredPayments] = useState<Payment[]>([]);
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
-  const { financialSummary } = useFinancialData(payments);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const { getMonthlyData } = useFinancialData();
+
+  // Simular dados de pagamentos por enquanto
+  useEffect(() => {
+    const mockPayments: Payment[] = [
+      { id: '1', amount: 1500, date: '2024-01-15', description: 'Salary', type: 'income' },
+      { id: '2', amount: 300, date: '2024-01-10', description: 'Groceries', type: 'expense' },
+      { id: '3', amount: 2000, date: '2024-01-20', description: 'Freelance', type: 'income' },
+      { id: '4', amount: 150, date: '2024-01-25', description: 'Utilities', type: 'expense' },
+    ];
+    setPayments(mockPayments);
+  }, []);
 
   useEffect(() => {
     if (filterType === 'all') {
@@ -28,8 +41,13 @@ export function PaymentManagement() {
   }, [payments, filterType]);
 
   function handleDeletePayment(id: string) {
-    deletePayment(id);
+    setPayments(prev => prev.filter(payment => payment.id !== id));
   }
+
+  // Calcular resumo financeiro
+  const totalIncome = payments.filter(p => p.type === 'income').reduce((sum, p) => sum + p.amount, 0);
+  const totalExpense = payments.filter(p => p.type === 'expense').reduce((sum, p) => sum + p.amount, 0);
+  const balance = totalIncome - totalExpense;
 
   return (
     <div className="payment-management">
@@ -72,15 +90,15 @@ export function PaymentManagement() {
       <div className="financial-summary">
         <div>
           <h3>Total Income</h3>
-          <p>{financialSummary.totalIncome.toFixed(2)}</p>
+          <p>{totalIncome.toFixed(2)}</p>
         </div>
         <div>
           <h3>Total Expense</h3>
-          <p>{financialSummary.totalExpense.toFixed(2)}</p>
+          <p>{totalExpense.toFixed(2)}</p>
         </div>
         <div>
           <h3>Balance</h3>
-          <p>{financialSummary.balance.toFixed(2)}</p>
+          <p>{balance.toFixed(2)}</p>
         </div>
       </div>
 
