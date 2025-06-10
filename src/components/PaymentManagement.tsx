@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowUpCircle, ArrowDownCircle, DollarSign, Plus, TrendingUp, TrendingDown, ChevronRight, Trash2, X, Calendar, CreditCard, Tag, Briefcase, Wallet, Building, FileText, Wrench, Settings, CalendarIcon, Type, Repeat, Lock, Edit3, RefreshCw, RotateCcw } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, DollarSign, Plus, TrendingUp, TrendingDown, ChevronRight, Trash2, X, Calendar, CreditCard, Tag, Briefcase, Wallet, Building, FileText, Wrench, Settings, CalendarIcon, Type, Repeat, Lock, Edit3, RefreshCw, RotateCcw, IconWithTooltip } from 'lucide-react';
 import { usePaymentContext, useFinancialData } from '../hooks/useFinancialData';
 import { useCompanySettings } from '../hooks/useCompanySettings';
 import { Button } from './ui/button';
@@ -946,7 +946,7 @@ export function PaymentManagement({ selectedMonth }: PaymentManagementProps) {
           <div className="flex items-center justify-between py-3 border-b border-gray-100">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-              <span className="text-gray-700 font-medium text-[12px] text-[13px]">Saldo inicial</span>
+              <span className="text-gray-700 font-medium text-[12px]">Saldo inicial</span>
               <span className="text-xs text-gray-500 flex items-center gap-1">
                 <ChevronRight className="w-3 h-3" />
                 Transportado de {previousMonth}
