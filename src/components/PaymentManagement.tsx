@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect, useRef } from 'react';
 import { ArrowUpCircle, ArrowDownCircle, DollarSign, Plus, TrendingUp, TrendingDown, ChevronRight, Trash2, X, Calendar, CreditCard, Tag, Briefcase, Wallet, Building, FileText, Wrench, Settings, CalendarIcon, Type, Repeat, Lock, Edit3, RefreshCw, RotateCcw } from 'lucide-react';
 import { IconWithTooltip } from './ui/icon-with-tooltip';
@@ -14,7 +15,11 @@ interface Payment {
   type: 'income' | 'expense';
 }
 
-export function PaymentManagement() {
+interface PaymentManagementProps {
+  selectedMonth: string;
+}
+
+export function PaymentManagement({ selectedMonth }: PaymentManagementProps) {
   const { getPaymentTransactionsForMonth, updatePaymentTransactionsForMonth } = usePaymentContext();
   const [filteredPayments, setFilteredPayments] = useState<Payment[]>([]);
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
@@ -141,3 +146,4 @@ export function PaymentManagement() {
     </div>
   );
 }
+
